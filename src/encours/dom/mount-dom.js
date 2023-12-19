@@ -1,16 +1,38 @@
 import { DOM_TYPES } from "../h";
 import { setAttributes } from "../utils/attributes";
 import { destroyDom } from "./destroy-dom";
+import { Dispatcher } from "../dispatcher";
 
 export function createApp({ state, view, reducers = {} }) {
   let parentEl = null;
   let vdom = null;
 
-  function emit(eventName, payload) {}
+  const dispatcher = new Dispatcher();
+  const subscriptions = [dispatcher.afterEveryCommand(renderApp)];
+
+  function emit(eventName, payload) {
+    dispatcher.dispatch(eventName, payload);
+  }
+
+  for (const actionName in reducers) {
+    const reducer = reducers[actionName];
+
+    const subs = dispatcher.subscribe(actionName, (payload) => {
+      state = reducer(state, payload);
+    });
+    subscriptions.push(subs);
+  }
 
   function renderApp() {
-    const newDvom = view(state, emit);
-    mountDom(newVdom, parentEl);
+    if (vdom) {
+      destroyDom(vdom);
+    }
+
+    vdom = view(state, emit);
+    mountDom(vdom, parentEl);
+    // const newVdom = view(state, emit);
+    // destroyDom(vdom);
+    // mountDom(newVdom, parentEl);
   }
 
   return {
@@ -23,6 +45,7 @@ export function createApp({ state, view, reducers = {} }) {
     unmount() {
       destroyDom(vdom);
       vdom = null;
+      subscriptions.forEach((unsubscribe) => unsubscribe());
     },
   };
 }
