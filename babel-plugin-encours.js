@@ -44,15 +44,10 @@ module.exports = function (babel) {
           }
           if (child.type === "JSXExpressionContainer") {
             if (child.expression.type === "LogicalExpression") {
-              //const logic = evaluateBoolean(child.expression);
-              //childArray.push(logic);
-              const leftValue = child.expression.left.left.name;
-              const leftText = t.jsxText(leftValue);
-              child.expression.left.left = leftText;
-              child.expression.left.right = t.jsxText(
-                child.expression.left.right.name
-              );
-              childArray.push(child.expression);
+              const result = evaluateLogicalExpression(child, path);
+              if (result) {
+                childArray.push(result);
+              }
             }
             if (child.expression.type === "Identifier") {
               const c = child.expression;
@@ -68,8 +63,54 @@ module.exports = function (babel) {
     },
   };
 
+  function evaluateLogicalExpression(child, path) {
+    const args = [];
+    const tagName = child.expression.type;
+    args.push(t.stringLiteral(tagName));
+
+    let leftAttribs = t.nullLiteral();
+    const leftArguments = child.expression.left;
+    //const exp = t.newExpression()
+    //const exp1c = t.jsxExpressionContainer()
+    const leftValue = leftArguments.left.name;
+    const rightValue = leftArguments.right.name;
+    const operator = leftArguments.operator;
+    const props = [];
+
+    const prop1 = t.inherits(
+      t.objectProperty(t.identifier("leftValue"), t.identifier(leftValue)),
+      child
+    );
+    props.push(prop1);
+    const prop2 = t.inherits(
+      t.objectProperty(t.identifier("rightValue"), t.identifier(rightValue)),
+      child
+    );
+    props.push(prop2);
+    const prop3 = t.inherits(
+      t.objectProperty(t.identifier("operator"), t.stringLiteral(operator)),
+      child
+    );
+    props.push(prop3);
+
+    leftAttribs = t.objectExpression(props);
+    args.push(leftAttribs);
+
+    args.push(child.expression.right);
+    const id = t.identifier("encours");
+    const fn = t.identifier("createExpression");
+    const callee = t.memberExpression(id, fn);
+    const callExpression = t.callExpression(callee, args);
+    //console.log(callExpression)
+
+    //path.replaceWith(callExpression, path.node);
+    return callExpression;
+  }
+
   function convertAttribute(node) {
+    console.log("node***", node);
     let value = convertValue(node.value || t.booleanLiteral(true));
+    //console.log('value', value)
     if (t.isStringLiteral(value)) {
       value.value = value.value.replace(/\n\s+/g, "");
     }

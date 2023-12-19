@@ -50,4 +50,5 @@ const App = (state, emit) => {
   );
 };
 
+debugger;
 encours.createApp({ state: initialState, reducers, view: App }).mount(root);
