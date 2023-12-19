@@ -42,6 +42,24 @@ module.exports = function (babel) {
               childArray.push(child);
             }
           }
+          if (child.type === "JSXExpressionContainer") {
+            if (child.expression.type === "LogicalExpression") {
+              //const logic = evaluateBoolean(child.expression);
+              //childArray.push(logic);
+              const leftValue = child.expression.left.left.name;
+              const leftText = t.jsxText(leftValue);
+              child.expression.left.left = leftText;
+              child.expression.left.right = t.jsxText(
+                child.expression.left.right.name
+              );
+              childArray.push(child.expression);
+            }
+            if (child.expression.type === "Identifier") {
+              const c = child.expression;
+              const text = t.jsxText(c.name);
+              childArray.push(text);
+            }
+          }
         }
         callExpression.arguments = callExpression.arguments.concat(childArray);
 
@@ -68,6 +86,27 @@ module.exports = function (babel) {
       return node.expression;
     } else {
       return node;
+    }
+  }
+
+  function evaluateBoolean(node) {
+    console.log(node);
+    const leftValue = node.left.left.value;
+    const rightValue = node.left.right.value;
+    const operator = node.left.operator;
+    switch (operator) {
+      case "===":
+        return leftValue === rightValue ? node.right : null;
+        break;
+      case "--":
+        return leftValue == rightValue ? node.right : null;
+        break;
+      case ">=":
+        return leftValue >= rightValue ? node.right : null;
+        break;
+      case "<=":
+        return leftValue <= rightValue ? node.right : null;
+        break;
     }
   }
 };
