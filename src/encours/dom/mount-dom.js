@@ -105,7 +105,31 @@ export function mountDom(vdom, parentEl, index) {
     case DOM_TYPES.ELEMENT:
       createElementNode(vdom, parentEl, index);
       break;
+    case DOM_TYPES.LOGICALEXPRESSION:
+      // check to see if we need to render this or not
+      if (doesNodeNeedRendering(vdom, parentEl, index)) {
+        console.log("do somthing ehter");
+      } else {
+        console.log("we dont need to render this element", vdom);
+      }
+      break;
     default:
-      throw new Error(`Can't mound DOM of type ${vdom.type}`);
+      console.warn(`Can't mound DOM of type ${vdom.type}`);
+      console.warn("vdom received: ", vdom);
+  }
+}
+
+function doesNodeNeedRendering(vdom, parentEl, index) {
+  const { props } = vdom;
+  const left = props.leftValue;
+  const right = props.rightValue;
+  const operator = props.operator;
+  switch (operator) {
+    case "===":
+      return left === right
+        ? mountDom(vdom.children[0], parentEl, index)
+        : null;
+    default:
+      return null;
   }
 }

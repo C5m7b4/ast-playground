@@ -4,6 +4,7 @@ export const DOM_TYPES = {
   TEXT: "text",
   ELEMENT: "element",
   FRAGMENT: "fragment",
+  LOGICALEXPRESSION: "logicalExpression",
 };
 
 export function createElement(tag, props, ...children) {
@@ -13,6 +14,15 @@ export function createElement(tag, props, ...children) {
     props,
     children: mapTextNodes(childNodesWithoutNulls),
     type: DOM_TYPES.ELEMENT,
+  };
+}
+
+export function createExpression(tag, props, ...children) {
+  return {
+    tag,
+    props,
+    children,
+    type: DOM_TYPES.LOGICALEXPRESSION,
   };
 }
 
