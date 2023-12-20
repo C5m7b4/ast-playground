@@ -1,4 +1,4 @@
-import { DOM_TYPES } from "../h";
+import { DOM_TYPES, extractChildren } from "../h";
 import { setAttributes } from "../utils/attributes";
 import { destroyDom } from "./destroy-dom";
 import { Dispatcher } from "../dispatcher";
@@ -29,7 +29,7 @@ export function createApp({ state, view, reducers = {} }) {
     }
 
     vdom = view(state, emit);
-    mountDom(vdom, parentEl);
+    mountDom(vdom, parentEl, null, state, emit);
     // const newVdom = view(state, emit);
     // destroyDom(vdom);
     // mountDom(newVdom, parentEl);
@@ -40,7 +40,7 @@ export function createApp({ state, view, reducers = {} }) {
       parentEl = _parentEl;
       vdom = view(state, emit);
       console.log(vdom);
-      render(vdom, parentEl);
+      render(vdom, parentEl, state, emit);
     },
     unmount() {
       destroyDom(vdom);
@@ -50,8 +50,8 @@ export function createApp({ state, view, reducers = {} }) {
   };
 }
 
-export function render(vdom, parentEl) {
-  mountDom(vdom, parentEl);
+export function render(vdom, parentEl, state, emit) {
+  mountDom(vdom, parentEl, null, state, emit);
 }
 
 function insert(el, parentEl, index) {
@@ -79,15 +79,17 @@ function createTextNode(vdom, parentEl, index) {
   insert(textNode, parentEl, index);
 }
 
-function createElementNode(vdom, parentEl, index) {
+function createElementNode(vdom, parentEl, index, state, emit) {
   const { tag, props } = vdom;
   let { children } = vdom;
+
+  children = extractChildren(vdom);
 
   const element = document.createElement(tag);
   addProps(element, props, vdom);
   vdom.el = element;
 
-  children.forEach((child) => mountDom(child, element));
+  children.forEach((child) => mountDom(child, element, null, state, emit));
   insert(element, parentEl, index);
 }
 
@@ -97,21 +99,30 @@ function addProps(el, props = {}, vdom) {
   setAttributes(el, attrs, vdom);
 }
 
-export function mountDom(vdom, parentEl, index) {
+function isFunction(vdom) {
+  return vdom && typeof vdom.tag === "function";
+}
+
+export function mountDom(vdom, parentEl, index, state, emit) {
+  if (isFunction(vdom)) {
+    mountComponent(vdom, parentEl, index, state, emit);
+    return;
+  }
   switch (vdom.type) {
     case DOM_TYPES.TEXT:
       createTextNode(vdom, parentEl, index);
       break;
     case DOM_TYPES.ELEMENT:
-      createElementNode(vdom, parentEl, index);
+      createElementNode(vdom, parentEl, index, state, emit);
       break;
     case DOM_TYPES.LOGICALEXPRESSION:
-      // check to see if we need to render this or not
-      if (doesNodeNeedRendering(vdom, parentEl, index)) {
-        console.log("do somthing ehter");
-      } else {
-        console.log("we dont need to render this element", vdom);
-      }
+      doesLogicalExpressionNodeNeedRendering(vdom, parentEl, index);
+      break;
+    case DOM_TYPES.CONDITIONALEXPRESSION:
+      doesConditionalExpressionNodeNeedRendering(vdom, parentEl, index);
+      break;
+    case DOM_TYPES.CALLEXPRESSION:
+      doesCallEpxpressionNodeNeedRendering(vdom, parentEl, index);
       break;
     default:
       console.warn(`Can't mound DOM of type ${vdom.type}`);
@@ -119,7 +130,44 @@ export function mountDom(vdom, parentEl, index) {
   }
 }
 
-function doesNodeNeedRendering(vdom, parentEl, index) {
+function mountComponent(vdom, parentEl, index, state, emit) {
+  const { props } = vdom;
+  const newVdom = vdom.tag({ state, emit, props });
+  mountDom(newVdom, parentEl, index, state, emit);
+}
+
+function doesCallEpxpressionNodeNeedRendering(vdom, parentEl, index) {
+  debugger;
+  const { props } = vdom;
+  const { children } = vdom;
+  const objectToOperatoOn = props.objectToOperatoOn;
+  const fn = props.fn;
+  if (fn === "map") {
+    objectToOperatoOn.map((item, i) => {
+      return mountDom(children[0], parentEl, index);
+    });
+  }
+}
+
+function doesConditionalExpressionNodeNeedRendering(vdom, parentEl, index) {
+  const { props } = vdom;
+  const left = props.leftValue;
+  const right = props.rightValue;
+  const operator = props.operator;
+  const consequent = props.consequent;
+  const alternate = props.alternate;
+
+  switch (operator) {
+    case "===":
+      return left === right
+        ? mountDom(consequent, parentEl, index)
+        : mountDom(alternate, parentEl, index);
+    default:
+      return null;
+  }
+}
+
+function doesLogicalExpressionNodeNeedRendering(vdom, parentEl, index) {
   const { props } = vdom;
   const left = props.leftValue;
   const right = props.rightValue;
