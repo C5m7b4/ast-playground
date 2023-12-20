@@ -141,7 +141,7 @@ const TodoItem = ({ state, emit, props }) => {
   );
 };
 
-const TodoList = ({ state, emit, props }) => {
+const TodoList = ({ state }) => {
   const editingItem = state.editing;
   return (
     <div style="width: 100%">
@@ -160,8 +160,8 @@ const App = (state, emit) => {
   const handleClick = () => {
     emit("add-todo");
   };
-  const handleEdit = () => {
-    emit("update-new-todo", props.todo);
+  const handleEdit = (e) => {
+    emit("update-new-todo", e.target.value);
   };
   return (
     <div className="main">

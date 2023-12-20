@@ -1,5 +1,5 @@
 import { createElement, createExpression } from "./h";
-import { createApp } from "./dom/mount-dom";
+import { createApp } from "./app";
 
 const encours = {
   createElement,
