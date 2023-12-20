@@ -19,9 +19,20 @@ const initialState = {
   editing: null,
   oldEdit: null,
   updatedEdit: null,
+  title: "Hello peeps",
+  style: { color: "blue" },
 };
 
 const reducers = {
+  "update-title": (state) => {
+    return {
+      ...state,
+      title: "this is updated",
+      style: {
+        color: "red",
+      },
+    };
+  },
   "update-new-todo": (state, payload) => {
     const newState = {
       ...state,
@@ -179,4 +190,29 @@ const App = (state, emit) => {
   );
 };
 
-encours.createApp({ state: initialState, reducers, view: App }).mount(root);
+const Header = ({ props }) => {
+  return (
+    <div>
+      <h3 style={props.state.style}>This is my h3</h3>
+      <h4 style={props.style}> this should be orange</h4>
+    </div>
+  );
+};
+
+const BasicApp = (state, emit) => {
+  const handleClick = () => {
+    emit("update-title");
+  };
+  return (
+    <div className="main">
+      <h2 style={state.style}>{state.title}</h2>
+      <button onClick={handleClick}>Click me</button>
+      <Header state={state} emit={emit} style={{ color: "orange" }} />
+    </div>
+  );
+};
+
+//encours.createApp({ state: initialState, reducers, view: App }).mount(root);
+encours
+  .createApp({ state: initialState, reducers, view: BasicApp })
+  .mount(root);

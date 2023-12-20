@@ -1,4 +1,5 @@
-import { mountDom } from "./mount-dom";
+import { mountDom, isFunction } from "./mount-dom";
 import { destroyDom } from "./destroy-dom";
+import { patchDom } from "./patch-dom";
 
-export { mountDom, destroyDom };
+export { isFunction, mountDom, destroyDom, patchDom };
