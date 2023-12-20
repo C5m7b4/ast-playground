@@ -1,3 +1,9 @@
 {
-    "plugins": ["./babel-plugin-encours", "./babel-plugin-encours-jsx"]
-}
+    "plugins":[
+      ["@babel/plugin-transform-react-jsx", {
+        "pragma":"encours.createElement",
+        "throwIfNamespace": false
+      }]
+    ],
+    "presets": ["@babel/preset-env"]
+  }

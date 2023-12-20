@@ -24,7 +24,9 @@ function removeTextNode(vdom) {
 function removeElementNode(vdom) {
   const { el, children, listeners } = vdom;
 
-  el.remove();
+  if (el) {
+    el.remove();
+  }
   children.forEach(destroyDom);
 
   if (listeners) {
