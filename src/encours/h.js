@@ -4,9 +4,6 @@ export const DOM_TYPES = {
   TEXT: "text",
   ELEMENT: "element",
   FRAGMENT: "fragment",
-  LOGICALEXPRESSION: "logicalExpression",
-  CONDITIONALEXPRESSION: "conditionalExpression",
-  CALLEXPRESSION: "callExpression",
 };
 
 export function createElement(tag, props, ...children) {
@@ -20,12 +17,6 @@ export function createElement(tag, props, ...children) {
 }
 
 export function createExpression(tag, props, ...children) {
-  let type = DOM_TYPES.LOGICALEXPRESSION;
-  if (tag === "ConditionalExpression") {
-    type = DOM_TYPES.CONDITIONALEXPRESSION;
-  } else if (tag === "CallExpression") {
-    type = DOM_TYPES.CALLEXPRESSION;
-  }
   return {
     tag,
     props,
