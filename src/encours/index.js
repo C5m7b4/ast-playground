@@ -1,9 +1,8 @@
-import { createElement, createExpression } from "./h";
+import { createElement } from "./h";
 import { createApp } from "./app";
 
 const encours = {
   createElement,
-  createExpression,
   createApp,
 };
 

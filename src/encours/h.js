@@ -6,8 +6,12 @@ export const DOM_TYPES = {
   FRAGMENT: "fragment",
 };
 
-export function createElement(tag, props, ...children) {
+export function createElement(tag, props = {}, ...children) {
+  if (tag && typeof tag === "function") {
+    return createComponent(tag, props);
+  }
   const childNodesWithoutNulls = withoutNulls(cleanChildren(children));
+  if (!props) props = {};
   return {
     tag,
     props,
@@ -16,13 +20,9 @@ export function createElement(tag, props, ...children) {
   };
 }
 
-export function createExpression(tag, props, ...children) {
-  return {
-    tag,
-    props,
-    children,
-    type,
-  };
+function createComponent(vdom, props) {
+  const newVdom = vdom({ props });
+  return newVdom;
 }
 
 function mapTextNodes(children) {

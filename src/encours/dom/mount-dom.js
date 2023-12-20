@@ -46,7 +46,7 @@ function addProps(el, props = {}, vdom) {
   setAttributes(el, attrs, vdom);
 }
 
-function isFunction(vdom) {
+export function isFunction(vdom) {
   return vdom && typeof vdom.tag === "function";
 }
 
@@ -72,17 +72,4 @@ function mountComponent(vdom, parentEl, index, state, emit) {
   const { props } = vdom;
   const newVdom = vdom.tag({ state, emit, props });
   mountDom(newVdom, parentEl, index, state, emit);
-}
-
-function doesCallEpxpressionNodeNeedRendering(vdom, parentEl, index) {
-  debugger;
-  const { props } = vdom;
-  const { children } = vdom;
-  const objectToOperatoOn = props.objectToOperatoOn;
-  const fn = props.fn;
-  if (fn === "map") {
-    objectToOperatoOn.map((item, i) => {
-      return mountDom(children[0], parentEl, index);
-    });
-  }
 }

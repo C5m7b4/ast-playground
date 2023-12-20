@@ -67,7 +67,7 @@ function setAttribute(el, name, value) {
   }
 }
 
-function removeAttribute(el, name) {
+export function removeAttribute(el, name) {
   el[name] = null;
   el.removeAttribute(name);
 }

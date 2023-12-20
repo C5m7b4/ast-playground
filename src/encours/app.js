@@ -1,4 +1,4 @@
-import { destroyDom, mountDom, pathDom } from "./dom";
+import { destroyDom, mountDom, patchDom } from "./dom";
 import { Dispatcher } from "./dispatcher";
 
 export function createApp({ state, view, reducers = {} }) {
