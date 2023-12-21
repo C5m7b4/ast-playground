@@ -3,7 +3,7 @@
       ["@babel/plugin-transform-react-jsx", {
         "pragma":"encours.createElement",
         "throwIfNamespace": false
-      }]
+      }],
     ],
     "presets": ["@babel/preset-env"]
   }
