@@ -23,7 +23,7 @@ export function createApp({ state, view, reducers = {} }) {
 
   function renderApp() {
     const newVdom = view(state, emit);
-    vdom = patchDom(vdom, newVdom, parentEl, state, emit);
+    vdom = patchDom(vdom, newVdom, parentEl, null, state, emit);
   }
 
   return {
@@ -41,6 +41,6 @@ export function createApp({ state, view, reducers = {} }) {
   };
 }
 
-export function render(vdom, parentEl, state, emit) {
-  mountDom(vdom, parentEl, null, state, emit);
-}
+// export function render(vdom, parentEl, state, emit) {
+//   mountDom(vdom, parentEl, null, state, emit);
+// }

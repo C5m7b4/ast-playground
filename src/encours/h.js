@@ -4,19 +4,22 @@ export const DOM_TYPES = {
   TEXT: "text",
   ELEMENT: "element",
   FRAGMENT: "fragment",
+  COMPONENT: "component",
 };
 
 export function createElement(tag, props = {}, ...children) {
   if (tag && typeof tag === "function") {
     return createComponent(tag, props);
   }
+  const type =
+    typeof tag === "string" ? DOM_TYPES.ELEMENT : DOM_TYPES.COMPONENT;
   const childNodesWithoutNulls = withoutNulls(cleanChildren(children));
   if (!props) props = {};
   return {
     tag,
     props,
     children: mapTextNodes(childNodesWithoutNulls),
-    type: DOM_TYPES.ELEMENT,
+    type,
   };
 }
 

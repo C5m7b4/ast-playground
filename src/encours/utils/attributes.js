@@ -1,4 +1,13 @@
-import { addEventListeners } from "./events";
+import { addEventListener, addEventListeners } from "./events";
+
+export function removeAttribute(el, name) {
+  el[name] = null;
+  el.removeAttribute(name);
+}
+
+export function removeStyle(el, name) {
+  el.style[name] = null;
+}
 
 export function setAttributes(el, attrs, vdom, hostComponent) {
   const {
@@ -37,6 +46,26 @@ export function setAttributes(el, attrs, vdom, hostComponent) {
   }
 }
 
+export function setAttribute(el, name, value, vdom) {
+  if (value === null) {
+    removeAttribute(el, name);
+  } else if (name.startsWith("data-")) {
+    el.setAttribute(name, value);
+  } else if (name.slice(0, 2) === "on") {
+    const events = [];
+    const eventName = name.toLowerCase().slice(2);
+    events.push({ eventName, value });
+
+    const addedListeners = [];
+    const addedListener = addEventListener(eventName, value, el);
+    addedListeners[eventName] = addedListener;
+
+    vdom.listeners = addedListeners;
+  } else {
+    el[name] = value;
+  }
+}
+
 function setClass(el, className) {
   el.className = "";
 
@@ -51,23 +80,4 @@ function setClass(el, className) {
 
 export function setStyle(el, name, value) {
   el.style[name] = value;
-}
-
-export function removeStyle(el, name) {
-  el.style[name] = null;
-}
-
-function setAttribute(el, name, value) {
-  if (value === null) {
-    removeAttribute(el, name);
-  } else if (name.startsWith("data-")) {
-    el.setAttribute(name, value);
-  } else {
-    el[name] = value;
-  }
-}
-
-export function removeAttribute(el, name) {
-  el[name] = null;
-  el.removeAttribute(name);
 }

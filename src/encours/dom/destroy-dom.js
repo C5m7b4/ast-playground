@@ -11,6 +11,13 @@ export function destroyDom(vdom) {
     case DOM_TYPES.ELEMENT:
       removeElementNode(vdom);
       break;
+    case DOM_TYPES.ELEMENT: {
+      removeElementNode(vdom);
+      break;
+    }
+    case DOM_TYPES.COMPONENT:
+      vdom.component.unmount();
+      break;
     default:
       throw new Error(`Dom type ${type} is not supported`);
   }
