@@ -74,6 +74,9 @@ export function mountDom(
     case DOM_TYPES.FRAGMENT:
       createFragmentNode(vdom, parentEl, index, hostComponent, state, emit);
       break;
+    case DOM_TYPES.COMPONENT:
+      createComponentNode(vdom, parentEl, index, hostComponent);
+      break;
     default:
       console.warn(`Can't mound DOM of type ${vdom.type}`);
       console.warn("vdom received: ", vdom);
@@ -100,4 +103,14 @@ function createFragmentNode(vdom, parentEl, index, hostComponent, state, emit) {
       emit
     )
   );
+}
+
+function createComponentNode(vdom, parentEl, index, hostComponent) {
+  const Component = vdom.tag;
+  const props = vdom.props;
+  const component = new Component(props);
+
+  component.mount(parentEl, index);
+  vdom.component = component;
+  vdom.el = component.firstElement;
 }

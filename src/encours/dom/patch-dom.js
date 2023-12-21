@@ -4,6 +4,7 @@ import { DOM_TYPES, extractChildren } from "../h";
 import { areNodesEqual } from "../nodes-equal";
 import {
   removeAttribute,
+  setAttribute,
   setAttributes,
   removeStyle,
   setStyle,
@@ -11,7 +12,7 @@ import {
 import { objectsDiff } from "../utils/objects";
 import { arraysDiff, arraysDiffSequence, ARRAY_DIFF_OP } from "../utils/arrays";
 import { isNotBlankOrEmptyString } from "../utils/strings";
-import { addEventListener } from "../utils/events";
+import { addEventListener, removeEventListeners } from "../utils/events";
 
 export function patchDom(
   oldVdom,
@@ -37,6 +38,9 @@ export function patchDom(
       return newVdom;
     case DOM_TYPES.ELEMENT:
       patchElement(oldVdom, newVdom, hostComponent, state, emit);
+      break;
+    case DOM_TYPES.COMPONENT:
+      patchComponent(oldVdom, newVdom);
       break;
     default:
       throw new Error(`cant path vdom of type 4{newVdom.type}`);
@@ -66,41 +70,40 @@ function patchText(oldVdom, newVdom) {
 
 function patchElement(oldVdom, newVdom, hostComponent, state, emit) {
   const el = oldVdom.el;
+  // if (el.className == "btn third") {
+  //
+  // }
   const {
     class: oldClass,
     className: oldClassName,
     style: oldStyle,
-    on: oldEvents,
+    // on: oldEvents,
     ...oldAttrs
   } = oldVdom.props;
   const {
     class: newClass,
     className: newClassName,
     style: newStyle,
-    on: newEvents,
+    // on: newEvents,
     ...newAttrs
   } = newVdom.props;
   const { listeners: oldListeners } = oldVdom;
-  patchAttrs(el, oldAttrs, newAttrs);
+  if (oldListeners) {
+    removeEventListeners(oldListeners, el);
+  }
+  patchAttrs(el, oldAttrs, newAttrs, hostComponent, newVdom);
   patchClasses(el, oldClass, newClass);
   patchClasses(el, oldClassName, newClassName);
   patchStyles(el, oldStyle, newStyle);
-  newVdom.listeners = patchEvents(
-    el,
-    oldListeners,
-    oldEvents,
-    newEvents,
-    hostComponent
-  );
 }
 
-function patchAttrs(el, oldAttrs, newAttrs) {
+function patchAttrs(el, oldAttrs, newAttrs, hostComponent, vdom) {
   const { added, removed, updated } = objectsDiff(oldAttrs, newAttrs);
   for (const attr of removed) {
     removeAttribute(el, attr);
   }
   for (const attr of added.concat(updated)) {
-    setAttributes(el, attr, newAttrs[attr]);
+    setAttribute(el, attr, newAttrs[attr], vdom);
   }
 }
 
@@ -124,6 +127,22 @@ function toClassList(classes = "") {
 }
 
 function patchStyles(el, oldStyle = {}, newStyle = {}) {
+  if (typeof oldStyle === "string" || typeof newStyle === "string") {
+    if (oldStyle !== newStyle) {
+      const oldStyleTypes = oldStyle.split(";");
+      for (const os of oldStyleTypes) {
+        const styleName = os.split(":")[0];
+        removeStyle(el, styleName);
+      }
+      const newStyleTypes = newStyle.slit(";");
+      for (const ns of newStyleTypes) {
+        const styleName = ns.split(":")[0];
+        const styleValue = ns.split(":")[1];
+        setStyle(el, styleName, styleValue);
+      }
+    }
+    return;
+  }
   const { added, removed, updated } = objectsDiff(oldStyle, newStyle);
   for (const style of removed) {
     removeStyle(el, style);
@@ -133,25 +152,25 @@ function patchStyles(el, oldStyle = {}, newStyle = {}) {
   }
 }
 
-function patchEvents(el, oldListeners, oldEvents, newEvents, hostComponent) {
-  const { removed, added, updated } = objectsDiff(oldEvents, newEvents);
+// function patchEvents(el, oldListeners, oldEvents, newEvents, hostComponent) {
+//   const { removed, added, updated } = objectsDiff(oldEvents, newEvents);
 
-  for (const eventName of removed.concat(updated)) {
-    el.removeEventListener(eventName, oldListeners[eventName]);
-  }
-  const addedListeners = {};
-  for (const eventName of added.concat(updated)) {
-    const listener = addEventListener(
-      eventName,
-      newEvents[eventName],
-      el,
-      hostComponent
-    );
+//   for (const eventName of removed.concat(updated)) {
+//     el.removeEventListener(eventName, oldListeners[eventName]);
+//   }
+//   const addedListeners = {};
+//   for (const eventName of added.concat(updated)) {
+//     const listener = addEventListener(
+//       eventName,
+//       newEvents[eventName],
+//       el,
+//       hostComponent
+//     );
 
-    addedListeners[eventName] = listener;
-  }
-  return addedListeners;
-}
+//     addedListeners[eventName] = listener;
+//   }
+//   return addedListeners;
+// }
 
 function patchChildren(oldVdom, newVdom, hostComponent, state, emit) {
   const oldChildren = extractChildren(oldVdom);
@@ -190,4 +209,14 @@ function patchChildren(oldVdom, newVdom, hostComponent, state, emit) {
         break;
     }
   }
+}
+
+function patchComponent(oldVdom, newVdom) {
+  const { component } = oldVdom;
+  const { props } = newVdom;
+
+  component.updateProps(props);
+
+  newVdom.component = component;
+  newVdom.el = component.firstElement;
 }

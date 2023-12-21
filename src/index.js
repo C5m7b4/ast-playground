@@ -99,7 +99,8 @@ const reducers = {
   },
 };
 
-const TodoEditingItem = ({ state, emit, props }) => {
+const TodoEditingItem = ({ props }) => {
+  const { state, emit } = props;
   const handleCancel = () => {
     emit("cancel-edit");
   };
@@ -128,18 +129,19 @@ const TodoEditingItem = ({ state, emit, props }) => {
   );
 };
 
-const TodoItem = ({ state, emit, props }) => {
-  console.log("state", state);
-  console.log("emit", emit);
+const TodoItem = ({ props }) => {
+  const { state, emit } = props;
+  const { todo } = props;
+
   const handleClick = () => {
-    emit("remove-todo", props.todo);
+    emit("remove-todo", todo);
   };
   const handleEdit = () => {
-    emit("set-editing", props.todo);
+    emit("set-editing", todo);
   };
   return (
     <div className="todo-container">
-      <span className="todo">{props.todo}</span>
+      <span className="todo">{todo}</span>
       <button className="btn third" onClick={handleEdit}>
         Edit
       </button>
@@ -150,15 +152,16 @@ const TodoItem = ({ state, emit, props }) => {
   );
 };
 
-const TodoList = ({ state }) => {
+const TodoList = ({ props }) => {
+  const { state, emit } = props;
   const editingItem = state.editing;
   return (
     <div style="width: 100%">
       {state.todos.map((todo, i) => {
         return editingItem == todo ? (
-          <TodoEditingItem todo={todo} />
+          <TodoEditingItem state={state} emit={emit} />
         ) : (
-          <TodoItem todo={todo} />
+          <TodoItem state={state} emit={emit} todo={todo} />
         );
       })}
     </div>
@@ -175,15 +178,15 @@ const App = (state, emit) => {
   return (
     <div className="main">
       <h2 className="title">My Todo App</h2>
-      <div style="display: flex">
+      <div style="display: flex; color: white">
         <input type="text" value={state.edit} onInput={(e) => handleEdit(e)} />
-        <button className="btn primary" onClick={handleClick}>
+        <button id="btnAddTodo" className="btn primary" onClick={handleClick}>
           Add Todo
         </button>
       </div>
 
       <h3>Todo List</h3>
-      <TodoList />
+      <TodoList state={state} emit={emit} />
     </div>
   );
 };
@@ -233,11 +236,19 @@ const Info = defineComponent({
   },
 });
 
+const ListItem = defineComponent({
+  render() {
+    const { data } = this.props;
+    return <div>{data}</div>;
+  },
+});
+
 const CockTail = defineComponent({
   state() {
     return {
       isLoading: false,
       cocktail: null,
+      listItems: ["one", "two", "three", "four"],
     };
   },
   render() {
@@ -252,6 +263,11 @@ const CockTail = defineComponent({
         <h1>Random Cocktail</h1>
         <button onClick={this.fetchCocktail}>Get Random Cockatil</button>
         <p>Drink name: {this.state.cocktail && this.state.cocktail.strDrink}</p>
+        <div>
+          {this.state.listItems.map((item) => (
+            <ListItem data={item} />
+          ))}
+        </div>
         {this.state.cocktail && this.state.cocktail.strDrink ? (
           <div>
             <div>Glass: {this.state.cocktail.strGlass}</div>
@@ -273,10 +289,10 @@ const CockTail = defineComponent({
   },
 });
 
-const cockTail = new CockTail();
-cockTail.mount(root);
+// const cockTail = new CockTail();
+// cockTail.mount(root);
 
-//encours.createApp({ state: initialState, reducers, view: App }).mount(root);
+encours.createApp({ state: initialState, reducers, view: App }).mount(root);
 // encours
 //   .createApp({ state: initialState, reducers, view: BasicApp })
 //   .mount(root);
