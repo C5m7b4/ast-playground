@@ -13,11 +13,18 @@ import { arraysDiff, arraysDiffSequence, ARRAY_DIFF_OP } from "../utils/arrays";
 import { isNotBlankOrEmptyString } from "../utils/strings";
 import { addEventListener } from "../utils/events";
 
-export function patchDom(oldVdom, newVdom, parentEl, state, emit) {
+export function patchDom(
+  oldVdom,
+  newVdom,
+  parentEl,
+  hostComponent = null,
+  state,
+  emit
+) {
   if (!areNodesEqual(oldVdom, newVdom)) {
     const index = findIndexInParent(parentEl, oldVdom.el);
     destroyDom(oldVdom, parentEl, index);
-    mountDom(newVdom, parentEl, index, state, emit);
+    mountDom(newVdom, parentEl, index, hostComponent, state, emit);
 
     return newVdom;
   }
@@ -29,13 +36,13 @@ export function patchDom(oldVdom, newVdom, parentEl, state, emit) {
       patchText(oldVdom, newVdom);
       return newVdom;
     case DOM_TYPES.ELEMENT:
-      patchElement(oldVdom, newVdom, state, emit);
+      patchElement(oldVdom, newVdom, hostComponent, state, emit);
       break;
     default:
       throw new Error(`cant path vdom of type 4{newVdom.type}`);
   }
 
-  patchChildren(oldVdom, newVdom, state, emit);
+  patchChildren(oldVdom, newVdom, hostComponent, state, emit);
 
   return newVdom;
 }
@@ -57,7 +64,7 @@ function patchText(oldVdom, newVdom) {
   }
 }
 
-function patchElement(oldVdom, newVdom, state, emit) {
+function patchElement(oldVdom, newVdom, hostComponent, state, emit) {
   const el = oldVdom.el;
   const {
     class: oldClass,
@@ -78,7 +85,13 @@ function patchElement(oldVdom, newVdom, state, emit) {
   patchClasses(el, oldClass, newClass);
   patchClasses(el, oldClassName, newClassName);
   patchStyles(el, oldStyle, newStyle);
-  newVdom.listeners = patchEvents(el, oldListeners, oldEvents, newEvents);
+  newVdom.listeners = patchEvents(
+    el,
+    oldListeners,
+    oldEvents,
+    newEvents,
+    hostComponent
+  );
 }
 
 function patchAttrs(el, oldAttrs, newAttrs) {
@@ -120,7 +133,7 @@ function patchStyles(el, oldStyle = {}, newStyle = {}) {
   }
 }
 
-function patchEvents(el, oldListeners, oldEvents, newEvents) {
+function patchEvents(el, oldListeners, oldEvents, newEvents, hostComponent) {
   const { removed, added, updated } = objectsDiff(oldEvents, newEvents);
 
   for (const eventName of removed.concat(updated)) {
@@ -128,14 +141,19 @@ function patchEvents(el, oldListeners, oldEvents, newEvents) {
   }
   const addedListeners = {};
   for (const eventName of added.concat(updated)) {
-    const listener = addEventListener(eventName, newEvents[eventName], el);
+    const listener = addEventListener(
+      eventName,
+      newEvents[eventName],
+      el,
+      hostComponent
+    );
 
     addedListeners[eventName] = listener;
   }
   return addedListeners;
 }
 
-function patchChildren(oldVdom, newVdom, state, emit) {
+function patchChildren(oldVdom, newVdom, hostComponent, state, emit) {
   const oldChildren = extractChildren(oldVdom);
   const newChildren = extractChildren(newVdom);
   const parentEl = oldVdom.el;
@@ -143,10 +161,11 @@ function patchChildren(oldVdom, newVdom, state, emit) {
 
   for (const operation of diffSeq) {
     const { originalIndex, index, item } = operation;
+    const offset = hostComponent?.offset ?? 0;
 
     switch (operation.op) {
       case ARRAY_DIFF_OP.ADD:
-        mountDom(item, parentEl, index, state, emit);
+        mountDom(item, parentEl, index + offset, hostComponent, state, emit);
         break;
       case ARRAY_DIFF_OP.REMOVE:
         destroyDom(item);
@@ -155,15 +174,16 @@ function patchChildren(oldVdom, newVdom, state, emit) {
         const oldChild = oldChildren[originalIndex];
         const newChild = newChildren[index];
         const el = oldChild.el;
-        const elAtTargetIndex = parentEl.childNodes[index];
+        const elAtTargetIndex = parentEl.childNodes[index + offset];
         parentEl.insertBefore(el, elAtTargetIndex);
-        patchDom(oldChild, newChild, parentEl, state, emit);
+        patchDom(oldChild, newChild, parentEl, hostComponent, state, emit);
         break;
       case ARRAY_DIFF_OP.NOOP:
         patchDom(
           oldChildren[originalIndex],
           newChildren[index],
           parentEl,
+          hostComponent,
           state,
           emit
         );

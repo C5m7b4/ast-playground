@@ -1,6 +1,6 @@
 import { addEventListeners } from "./events";
 
-export function setAttributes(el, attrs, vdom) {
+export function setAttributes(el, attrs, vdom, hostComponent) {
   const {
     class: classNameShort,
     className: classNameLong,
@@ -33,7 +33,7 @@ export function setAttributes(el, attrs, vdom) {
     } else {
       setAttribute(el, name, value);
     }
-    vdom.listeners = addEventListeners(events, el);
+    vdom.listeners = addEventListeners(events, el, hostComponent);
   }
 }
 

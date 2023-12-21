@@ -1,5 +1,5 @@
 console.log("ready");
-import encours from "./encours";
+import encours, { defineComponent } from "./encours";
 
 const step1 = (
   <div className="main">
@@ -210,7 +210,73 @@ const BasicApp = (state, emit) => {
   );
 };
 
+const url = "https://www.thecocktaildb.com/api/json/v1/1/random.php";
+
+async function fetchCocktailDrink() {
+  const response = await fetch(url);
+  const data = await response.json();
+
+  return data.drinks[0];
+}
+
+const Info = defineComponent({
+  state(cocktail) {
+    cocktail;
+  },
+  render() {
+    return (
+      <div>
+        <div>Glass: {this.state.cocktail.strGlass}</div>
+        <div>Instructions: {this.state.cocktail.strInstructions}</div>
+      </div>
+    );
+  },
+});
+
+const CockTail = defineComponent({
+  state() {
+    return {
+      isLoading: false,
+      cocktail: null,
+    };
+  },
+  render() {
+    const { isLoading, cocktail } = this.state;
+
+    if (isLoading) {
+      return <div>Loading...</div>;
+    }
+
+    return (
+      <div>
+        <h1>Random Cocktail</h1>
+        <button onClick={this.fetchCocktail}>Get Random Cockatil</button>
+        <p>Drink name: {this.state.cocktail && this.state.cocktail.strDrink}</p>
+        {this.state.cocktail && this.state.cocktail.strDrink ? (
+          <div>
+            <div>Glass: {this.state.cocktail.strGlass}</div>
+            <div>Instructions: {this.state.cocktail.strInstructions}</div>
+            <img src={this.state.cocktail.strDrinkThumb} alt="drink" />
+          </div>
+        ) : null}
+      </div>
+    );
+  },
+  async fetchCocktail() {
+    this.updateState({ isLoading: true, cocktail: null });
+    const cocktail = await fetchCocktailDrink();
+
+    setTimeout(() => {
+      console.log(cocktail);
+      this.updateState({ isLoading: false, cocktail });
+    }, 1000);
+  },
+});
+
+const cockTail = new CockTail();
+cockTail.mount(root);
+
 //encours.createApp({ state: initialState, reducers, view: App }).mount(root);
-encours
-  .createApp({ state: initialState, reducers, view: BasicApp })
-  .mount(root);
+// encours
+//   .createApp({ state: initialState, reducers, view: BasicApp })
+//   .mount(root);

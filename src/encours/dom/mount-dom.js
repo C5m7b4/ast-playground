@@ -26,31 +26,40 @@ function createTextNode(vdom, parentEl, index) {
   insert(textNode, parentEl, index);
 }
 
-function createElementNode(vdom, parentEl, index, state, emit) {
+function createElementNode(vdom, parentEl, index, hostComponent, state, emit) {
   const { tag, props } = vdom;
   let { children } = vdom;
 
   children = extractChildren(vdom);
 
   const element = document.createElement(tag);
-  addProps(element, props, vdom);
+  addProps(element, props, vdom, hostComponent);
   vdom.el = element;
 
-  children.forEach((child) => mountDom(child, element, null, state, emit));
+  children.forEach((child) =>
+    mountDom(child, element, null, hostComponent, state, emit)
+  );
   insert(element, parentEl, index);
 }
 
-function addProps(el, props = {}, vdom) {
+function addProps(el, props = {}, vdom, hostComponent) {
   if (!props) return;
   const { ...attrs } = props;
-  setAttributes(el, attrs, vdom);
+  setAttributes(el, attrs, vdom, hostComponent);
 }
 
 export function isFunction(vdom) {
   return vdom && typeof vdom.tag === "function";
 }
 
-export function mountDom(vdom, parentEl, index, state, emit) {
+export function mountDom(
+  vdom,
+  parentEl,
+  index,
+  hostComponent = null,
+  state,
+  emit
+) {
   if (isFunction(vdom)) {
     mountComponent(vdom, parentEl, index, state, emit);
     return;
@@ -60,7 +69,10 @@ export function mountDom(vdom, parentEl, index, state, emit) {
       createTextNode(vdom, parentEl, index);
       break;
     case DOM_TYPES.ELEMENT:
-      createElementNode(vdom, parentEl, index, state, emit);
+      createElementNode(vdom, parentEl, index, hostComponent, state, emit);
+      break;
+    case DOM_TYPES.FRAGMENT:
+      createFragmentNode(vdom, parentEl, index, hostComponent, state, emit);
       break;
     default:
       console.warn(`Can't mound DOM of type ${vdom.type}`);
@@ -72,4 +84,20 @@ function mountComponent(vdom, parentEl, index, state, emit) {
   const { props } = vdom;
   const newVdom = vdom.tag({ state, emit, props });
   mountDom(newVdom, parentEl, index, state, emit);
+}
+
+function createFragmentNode(vdom, parentEl, index, hostComponent, state, emit) {
+  const { children } = vdom;
+  vdom.el = parentEl;
+
+  children.forEach((child, i) =>
+    mountDom(
+      child,
+      parentEl,
+      index ? index + i : null,
+      hostComponent,
+      state,
+      emit
+    )
+  );
 }

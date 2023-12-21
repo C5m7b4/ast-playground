@@ -1,5 +1,6 @@
 import { createElement } from "./h";
 import { createApp } from "./app";
+import { defineComponent } from "./component";
 
 const encours = {
   createElement,
@@ -7,3 +8,4 @@ const encours = {
 };
 
 export default encours;
+export { defineComponent };
