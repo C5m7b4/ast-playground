@@ -1,5 +1,3 @@
-import React from "react";
-
 console.log("ready");
 import encours from "./encours";
 
