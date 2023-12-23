@@ -1,5 +1,6 @@
 import { destroyDom, mountDom, patchDom } from "./dom";
 import { Dispatcher } from "./dispatcher";
+import { Router } from "./router/Router";
 
 export function createApp({ state, view, reducers = {} }) {
   let parentEl = null;
@@ -12,6 +13,10 @@ export function createApp({ state, view, reducers = {} }) {
     dispatcher.dispatch(eventName, payload);
   }
 
+  window.onload = () => {
+    const router = Router.getInstance(state, emit, vdom);
+  };
+
   for (const actionName in reducers) {
     const reducer = reducers[actionName];
 
@@ -21,9 +26,21 @@ export function createApp({ state, view, reducers = {} }) {
     subscriptions.push(subs);
   }
 
-  function renderApp() {
-    const newVdom = view(state, emit);
-    vdom = patchDom(vdom, newVdom, parentEl, null, state, emit);
+  function renderApp(_, generatedVdom) {
+    if (generatedVdom) {
+      const newVdom = patchDom(
+        vdom,
+        generatedVdom,
+        parentEl,
+        null,
+        state,
+        emit
+      );
+      vdom = newVdom;
+    } else {
+      const newVdom = view(state, emit);
+      vdom = patchDom(vdom, newVdom, parentEl, null, state, emit);
+    }
   }
 
   return {

@@ -69,22 +69,20 @@ function patchText(oldVdom, newVdom) {
 }
 
 function patchElement(oldVdom, newVdom, hostComponent, state, emit) {
-  const el = oldVdom.el;
-  // if (el.className == "btn third") {
-  //
+  // if (newVdom.el.id == "content") {
+  //   debugger;
   // }
+  const el = oldVdom.el;
   const {
     class: oldClass,
     className: oldClassName,
     style: oldStyle,
-    // on: oldEvents,
     ...oldAttrs
   } = oldVdom.props;
   const {
     class: newClass,
     className: newClassName,
     style: newStyle,
-    // on: newEvents,
     ...newAttrs
   } = newVdom.props;
   const { listeners: oldListeners } = oldVdom;

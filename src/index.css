@@ -1,6 +1,43 @@
+*{
+    margin: 0;
+    padding: 0;
+    text-decoration: none;
+
+}
+
 body{
     background-color: rgb(44, 41, 41);
-    color: rgb(122, 116, 116);
+    color: rgb(189, 179, 179);
+}
+.wrapper {
+    width: 800px;
+    margin: 0 auto;
+}
+
+.header {
+    padding: 10px;
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+}
+
+.content{
+    padding: 10px;
+}
+
+a {
+    color: white;
+}
+
+a:hover{
+    color: blue;
+}
+
+a:active{
+    color: white;
+}
+
+a:visited{
+    color: white;
 }
 
 .main{

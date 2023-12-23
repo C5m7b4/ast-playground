@@ -51,6 +51,8 @@ export function setAttribute(el, name, value, vdom) {
     removeAttribute(el, name);
   } else if (name.startsWith("data-")) {
     el.setAttribute(name, value);
+  } else if (name.startsWith("router-")) {
+    el.setAttribute(name, value);
   } else if (name.slice(0, 2) === "on") {
     const events = [];
     const eventName = name.toLowerCase().slice(2);
