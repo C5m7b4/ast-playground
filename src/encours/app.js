@@ -49,7 +49,6 @@ export function createApp({ view, reducers = {} }) {
     mount(_parentEl) {
       parentEl = _parentEl;
       vdom = view();
-      console.log(vdom);
       mountDom(vdom, parentEl, null);
     },
     unmount() {

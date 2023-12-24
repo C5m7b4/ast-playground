@@ -4,7 +4,7 @@ const initialState = {
   url: "https://gooogle.com",
 };
 
-const appReducer = ({ state: initialState, action }) => {
+const appReducer = (state = initialState, action) => {
   switch (action.type) {
     case actions.INIT:
       return {
