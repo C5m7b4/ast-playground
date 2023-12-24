@@ -3,11 +3,11 @@ import encours from "./encours";
 import { rootReducer } from "./reducers";
 import Header from "./components/Header";
 
-const reducers = {
-  "load-router-page": (staet, payload) => {
-    return state;
-  },
-};
+// const reducers = {
+//   "load-router-page": (staet, payload) => {
+//     return state;
+//   },
+// };
 
 // const initialState = {
 //   edit: null,
@@ -112,4 +112,4 @@ const App = (state, emit) => {
   );
 };
 
-encours.createApp({ reducers, view: App }).mount(root);
+encours.createApp({ reducers: rootReducer, view: App }).mount(root);

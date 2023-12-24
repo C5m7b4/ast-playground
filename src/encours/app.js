@@ -6,8 +6,8 @@ import { Etat } from "./etat/Etat";
 export function createApp({ view, reducers = {} }) {
   let parentEl = null;
   let vdom = null;
+  let state = {};
 
-  debugger;
   const etat = Etat.getInstance(reducers);
 
   const dispatcher = new Dispatcher();
@@ -18,11 +18,16 @@ export function createApp({ view, reducers = {} }) {
   }
 
   window.onload = () => {
-    const router = Router.getInstance(vdom);
+    const router = Router.getInstance(emit, vdom);
   };
 
-  for (const actionName in reducers) {
-    const reducer = reducers[actionName];
+  const internalReducers = {
+    "load-router-page": (staet, payload) => {
+      return state;
+    },
+  };
+  for (const actionName in internalReducers) {
+    const reducer = internalReducers[actionName];
 
     const subs = dispatcher.subscribe(actionName, (payload) => {
       state = reducer(state, payload);

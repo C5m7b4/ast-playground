@@ -3,6 +3,8 @@ import { clone } from "../utils/objects";
 export const Router = (function (emit) {
   let instance;
   const routes = [];
+  let broadcast = null;
+  let state = null;
   let vdom = null;
   let config = null;
 
@@ -29,7 +31,7 @@ export const Router = (function (emit) {
     const newComponentVdom = Component.default();
 
     const content = replaceContent(newComponentVdom);
-    //broadcast("load-router-page", content);
+    broadcast("load-router-page", content);
   }
   function createInstance() {
     const routerConfig = require("../../../router.config.json");
@@ -58,7 +60,9 @@ export const Router = (function (emit) {
     return newVdom;
   }
   return {
-    getInstance: function (_vdom) {
+    getInstance: function (_emit, _vdom) {
+      broadcast = _emit;
+      //state = _state;
       vdom = _vdom;
       if (!instance) {
         instance = createInstance();
