@@ -1,6 +1,7 @@
 import { createElement } from "./h";
 import { createApp } from "./app";
 import { defineComponent } from "./component";
+import { combineReducers, Etat } from "./etat";
 
 const encours = {
   createElement,
@@ -8,4 +9,4 @@ const encours = {
 };
 
 export default encours;
-export { defineComponent };
+export { defineComponent, combineReducers, Etat };
