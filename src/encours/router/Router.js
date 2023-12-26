@@ -28,11 +28,12 @@ export const Router = (function (emit) {
     //const Component = require(routeToLoad);
     const Component = require("../../pages/" + route.component);
     //const Component = require("../../" + routeFolder + "/" + route.component);
-    const newComponentVdom = Component.default(state, broadcast);
+    const newComponentVdom = Component.default();
 
     const content = replaceContent(newComponentVdom);
     broadcast("load-router-page", content);
   }
+  function refreshRouter() {}
   function createInstance() {
     const routerConfig = require("../../../router.config.json");
     config = routerConfig;
@@ -60,9 +61,9 @@ export const Router = (function (emit) {
     return newVdom;
   }
   return {
-    getInstance: function (_state, _emit, _vdom) {
+    getInstance: function (_emit, _vdom) {
       broadcast = _emit;
-      state = _state;
+      //state = _state;
       vdom = _vdom;
       if (!instance) {
         instance = createInstance();

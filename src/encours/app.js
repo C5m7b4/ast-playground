@@ -1,10 +1,21 @@
 import { destroyDom, mountDom, patchDom } from "./dom";
 import { Dispatcher } from "./dispatcher";
 import { Router } from "./router/Router";
+import { Etat } from "./etat/Etat";
+import { thisExpression } from "babel-types";
 
-export function createApp({ state, view, reducers = {} }) {
+export function createApp({ view, reducers = {} }) {
   let parentEl = null;
   let vdom = null;
+  let state = {};
+  let router = null;
+
+  const etat = Etat.getInstance(reducers);
+  function getState(reducer) {
+    return etat.getState(reducer);
+    //return etat;
+  }
+  this.getState = getState;
 
   const dispatcher = new Dispatcher();
   const subscriptions = [dispatcher.afterEveryCommand(renderApp)];
@@ -13,12 +24,23 @@ export function createApp({ state, view, reducers = {} }) {
     dispatcher.dispatch(eventName, payload);
   }
 
+  function getRouter() {
+    return router;
+  }
+
   window.onload = () => {
-    const router = Router.getInstance(state, emit, vdom);
+    router = Router.getInstance(emit, vdom);
   };
 
-  for (const actionName in reducers) {
-    const reducer = reducers[actionName];
+  this.getRouter = getRouter;
+
+  const internalReducers = {
+    "load-router-page": (state, payload) => {
+      return state;
+    },
+  };
+  for (const actionName in internalReducers) {
+    const reducer = internalReducers[actionName];
 
     const subs = dispatcher.subscribe(actionName, (payload) => {
       state = reducer(state, payload);
@@ -28,14 +50,7 @@ export function createApp({ state, view, reducers = {} }) {
 
   function renderApp(_, generatedVdom) {
     if (generatedVdom) {
-      const newVdom = patchDom(
-        vdom,
-        generatedVdom,
-        parentEl,
-        null,
-        state,
-        emit
-      );
+      const newVdom = patchDom(vdom, generatedVdom, parentEl, null);
       vdom = newVdom;
     } else {
       const newVdom = view(state, emit);
@@ -46,9 +61,8 @@ export function createApp({ state, view, reducers = {} }) {
   return {
     mount(_parentEl) {
       parentEl = _parentEl;
-      vdom = view(state, emit);
-      console.log(vdom);
-      mountDom(vdom, parentEl, null, state, emit);
+      vdom = view();
+      mountDom(vdom, parentEl, null);
     },
     unmount() {
       destroyDom(vdom);
@@ -57,7 +71,3 @@ export function createApp({ state, view, reducers = {} }) {
     },
   };
 }
-
-// export function render(vdom, parentEl, state, emit) {
-//   mountDom(vdom, parentEl, null, state, emit);
-// }
