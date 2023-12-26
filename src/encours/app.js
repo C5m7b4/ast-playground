@@ -2,13 +2,20 @@ import { destroyDom, mountDom, patchDom } from "./dom";
 import { Dispatcher } from "./dispatcher";
 import { Router } from "./router/Router";
 import { Etat } from "./etat/Etat";
+import { thisExpression } from "babel-types";
 
 export function createApp({ view, reducers = {} }) {
   let parentEl = null;
   let vdom = null;
   let state = {};
+  let router = null;
 
   const etat = Etat.getInstance(reducers);
+  function getState(reducer) {
+    return etat.getState(reducer);
+    //return etat;
+  }
+  this.getState = getState;
 
   const dispatcher = new Dispatcher();
   const subscriptions = [dispatcher.afterEveryCommand(renderApp)];
@@ -17,12 +24,18 @@ export function createApp({ view, reducers = {} }) {
     dispatcher.dispatch(eventName, payload);
   }
 
+  function getRouter() {
+    return router;
+  }
+
   window.onload = () => {
-    const router = Router.getInstance(emit, vdom);
+    router = Router.getInstance(emit, vdom);
   };
 
+  this.getRouter = getRouter;
+
   const internalReducers = {
-    "load-router-page": (staet, payload) => {
+    "load-router-page": (state, payload) => {
       return state;
     },
   };
@@ -58,7 +71,3 @@ export function createApp({ view, reducers = {} }) {
     },
   };
 }
-
-// export function render(vdom, parentEl, state, emit) {
-//   mountDom(vdom, parentEl, null, state, emit);
-// }

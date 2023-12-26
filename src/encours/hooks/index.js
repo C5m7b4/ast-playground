@@ -1,3 +1,4 @@
 import { getRouter } from "./getRouter";
+import { getState } from "./getState";
 
-export { getRouter };
+export { getRouter, getState };

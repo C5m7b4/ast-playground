@@ -33,6 +33,7 @@ export const Router = (function (emit) {
     const content = replaceContent(newComponentVdom);
     broadcast("load-router-page", content);
   }
+  function refreshRouter() {}
   function createInstance() {
     const routerConfig = require("../../../router.config.json");
     config = routerConfig;

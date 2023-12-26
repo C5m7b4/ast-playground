@@ -8,7 +8,7 @@ const initialState = {
   updatedEdit: null,
 };
 
-const todosReducer = ({ state: initialState, action }) => {
+const todosReducer = (state = initialState, action) => {
   switch (action.type) {
     case actions.UPDATE_NEW_TODO:
       return {

@@ -28,11 +28,17 @@ export const Etat = (function () {
     }
   }
 
+  function getState(reducer) {
+    const globalState = rootReducer(reducer, { type: null });
+    return globalState[reducer];
+  }
+
   function createInstance(_rootReducer) {
     rootReducer = _rootReducer;
     return {
       subscribe,
       dispatch,
+      getState,
     };
   }
   return {
