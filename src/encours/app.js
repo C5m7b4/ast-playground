@@ -53,18 +53,31 @@ export function createApp({ view, reducers = {} }) {
   }
 
   function renderApp(_, generatedVdom) {
+    console.log("rendering app");
+
     if (generatedVdom) {
       view = generatedVdom;
       const newVdom = patchDom(vdom, generatedVdom, parentEl, null);
       vdom = newVdom;
     } else {
       //const newVdom = view(state, emit);
-      debugger;
-      const Component = require("../pages/Home");
+      let location = window.location.pathname;
+      if (location === "/") {
+        location = "Home";
+      } else {
+        location = cleanPath(location);
+      }
+      const Component = require("../pages/" + location);
       const newComponentVdom = Component.default();
       const newContent = replaceContent(newComponentVdom);
       vdom = patchDom(vdom, newContent, parentEl, null, state, emit);
     }
+  }
+
+  function cleanPath(path) {
+    path = path.replace("/", "");
+    path = path.slice(0, 1).toUpperCase() + path.slice(1);
+    return path;
   }
 
   function replaceContent(newVdomComponent) {

@@ -2,6 +2,7 @@ import Signals from "./index";
 
 export class Computed {
   constructor(computeFn) {
+    //console.log("creating computed for" + computeFn);
     this._computeFn = computeFn;
     this._value = undefined;
     this._isStale = true;

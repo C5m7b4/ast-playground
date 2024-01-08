@@ -1,15 +1,21 @@
 import encours from "../encours";
 import * as actions from "../actions/appActions";
 import Signals from "../Signals";
+import Name from "./Name";
 
 // put our signals here
 const url = Signals.createSignal("http://myUrl.com");
+const myArtifact = encours.createArtifact("here is an artifact");
 
 const Home = () => {
   const router = encours.getRouter();
 
   const state = encours.getState("appReducer");
   const dispatch = encours.getDispatch();
+
+  myArtifact.subscribe((value) => {
+    console.log("artifact has changed", value);
+  });
 
   Signals.createEffect(() => {
     console.log("createEffect for url has changed", url.value);
@@ -22,6 +28,15 @@ const Home = () => {
       payload: "https://thisisfunny.com",
     });
   };
+
+  const handleArtifact = () => {
+    myArtifact.value = "here I'm updated";
+    dispatch("appReducer", {
+      type: actions.UPDATE_URL,
+      payload: "https://thisisfunny.com",
+    });
+  };
+
   return (
     <div>
       <h1>Home</h1>
@@ -35,6 +50,9 @@ const Home = () => {
       <div>
         <button onClick={handleClick}>Update URL</button>
       </div>
+      <Name />
+      <div>my artifact: {myArtifact.value}</div>
+      <button onClick={handleArtifact}>Update Artifact</button>
     </div>
   );
 };

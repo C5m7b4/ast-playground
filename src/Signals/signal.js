@@ -3,11 +3,13 @@ import Signals from "./index";
 
 export class Signal {
   constructor(initialValue) {
+    console.log("creating signal with value: " + initialValue);
     this._value = initialValue;
     this._dependents = [];
   }
 
   get value() {
+    console.log("getting value, " + JSON.stringify(this._value));
     if (Signals.currentAccessed) {
       this._addDependent(Signals.currentAccessed);
     }
@@ -24,6 +26,7 @@ export class Signal {
   }
 
   _addDependent(dependent) {
+    if (typeof dependent !== "object") return;
     if (!this._dependents.includes(dependent)) {
       this._dependents.push(dependent);
     }
