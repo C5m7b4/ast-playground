@@ -70,5 +70,6 @@ export const Router = (function (emit) {
       }
       return instance;
     },
+    urlLocationHandler,
   };
 })();

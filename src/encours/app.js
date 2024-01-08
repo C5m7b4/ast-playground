@@ -2,7 +2,7 @@ import { destroyDom, mountDom, patchDom } from "./dom";
 import { Dispatcher } from "./dispatcher";
 import { Router } from "./router/Router";
 import { Etat } from "./etat/Etat";
-import { thisExpression } from "babel-types";
+import { clone } from "./utils/objects";
 
 export function createApp({ view, reducers = {} }) {
   let parentEl = null;
@@ -10,19 +10,23 @@ export function createApp({ view, reducers = {} }) {
   let state = {};
   let router = null;
 
-  const etat = Etat.getInstance(reducers);
-  function getState(reducer) {
-    return etat.getState(reducer);
-    //return etat;
-  }
-  this.getState = getState;
-
   const dispatcher = new Dispatcher();
   const subscriptions = [dispatcher.afterEveryCommand(renderApp)];
 
   function emit(eventName, payload) {
     dispatcher.dispatch(eventName, payload);
   }
+
+  const etat = Etat.getInstance(reducers, emit);
+  function getState(reducer) {
+    return etat.getState(reducer);
+    //return etat;
+  }
+  this.getState = getState;
+  function getDispatch() {
+    return etat.getDispatch();
+  }
+  this.getDispatch = getDispatch;
 
   function getRouter() {
     return router;
@@ -50,12 +54,27 @@ export function createApp({ view, reducers = {} }) {
 
   function renderApp(_, generatedVdom) {
     if (generatedVdom) {
+      view = generatedVdom;
       const newVdom = patchDom(vdom, generatedVdom, parentEl, null);
       vdom = newVdom;
     } else {
-      const newVdom = view(state, emit);
-      vdom = patchDom(vdom, newVdom, parentEl, null, state, emit);
+      //const newVdom = view(state, emit);
+      debugger;
+      const Component = require("../pages/Home");
+      const newComponentVdom = Component.default();
+      const newContent = replaceContent(newComponentVdom);
+      vdom = patchDom(vdom, newContent, parentEl, null, state, emit);
     }
+  }
+
+  function replaceContent(newVdomComponent) {
+    let newVdom = clone(vdom);
+    for (const el of newVdom.children) {
+      if (el.el.id === "content") {
+        el.children = newVdomComponent.children;
+      }
+    }
+    return newVdom;
   }
 
   return {

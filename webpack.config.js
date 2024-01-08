@@ -55,7 +55,7 @@ module.exports = {
     static: {
       directory: path.join(__dirname, "src"),
     },
-    port: 3009,
+    port: 3010,
     compress: true,
     client: {
       overlay: false,

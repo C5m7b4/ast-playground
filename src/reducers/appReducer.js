@@ -10,6 +10,11 @@ const appReducer = (state = initialState, action) => {
       return {
         ...state,
       };
+    case actions.UPDATE_URL:
+      return {
+        ...state,
+        url: action.payload,
+      };
     default:
       return state;
   }
