@@ -2,6 +2,7 @@ import Signals from "./index";
 
 export class Effect {
   constructor(effectFn) {
+    //console.log("creating effect for " + effectFn);
     this._effectFn = effectFn;
     this._isStale = true;
     this._execute();
